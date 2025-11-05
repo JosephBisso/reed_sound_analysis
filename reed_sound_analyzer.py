@@ -98,6 +98,33 @@ for filename in os.listdir(folder_path):
         plt.savefig(os.path.join(output_path, f"{filename}_waveform.png"))
         plt.close()
 
+        # === 1.2. Zoom nach erstem Peak + 2s ===
+        zoom_duration = 0.01  # Sekunden
+        zoom_samples = int(sample_rate * zoom_duration)
+
+        # Ersten signifikanten Peak finden
+        peak_index = np.argmax(np.abs(data))
+        peak_time = peak_index / sample_rate
+        start_time = peak_time + 2.0
+        start_sample = int(start_time * sample_rate)
+        end_sample = start_sample + zoom_samples
+
+        # Sicherstellen, dass genug Daten vorhanden sind
+        if end_sample <= len(data):
+            zoom_time = time[start_sample:end_sample]
+            zoom_data = data[start_sample:end_sample]
+
+            plt.figure(figsize=(10, 3))
+            plt.plot(zoom_time, zoom_data)
+            plt.title(f"Zoom ab {start_time:.2f}s – {filename}")
+            plt.xlabel("Zeit (s)")
+            plt.ylabel("Amplitude")
+            plt.tight_layout()
+            plt.savefig(os.path.join(output_path, f"{filename}_zoom_after_peak.png"))
+            plt.close()
+        else:
+            print(f"Nicht genug Daten für Zoom ab {start_time:.2f}s.")
+
         # === 2. Spektrogramm ===
         f, t, Sxx = spectrogram(data, fs=sample_rate)
         plt.figure(figsize=(10, 4))
